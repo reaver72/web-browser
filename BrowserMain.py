@@ -9,22 +9,30 @@ from PyQt5.QtPrintSupport import *
 import psutil
 import threading
 
+from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
+
+
 def suppress_qt_warnings():
     environ["QT_DEVICE_PIXEL_RATIO"] = "0"
     environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     environ["QT_SCREEN_SCALE_FACTORS"] = "1"
     environ["QT_SCALE_FACTOR"] = "1"
+
+
 x_url = []
 y_url = []
 back_press = 0
 forward_press = 0
+
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         try:
-            self.setWindowIcon(QtGui.QIcon("/home/rawbeen/Desktop/browser.png"))
+            self.setWindowIcon(QtGui.QIcon(
+                "/home/rawbeen/Desktop/browser.png"))
         except:
             pass
         url = QtCore.QUrl(self.ui.lineEdit.text())
@@ -69,7 +77,6 @@ class MainWindow(QWidget):
         timer = QtCore.QTimer(self)
         timer.timeout.connect(self.lcd_animation_th)
         timer.start(1100)
-        
 
         # if
         self.ui.widget.urlChanged.connect(lambda qurl, browser=self.ui.widget:
@@ -92,7 +99,6 @@ class MainWindow(QWidget):
 
         if qurl is None:
             qurl = QtCore.QUrl("")
-        # self.ui.widget = QtWebEngineWidgets.QWebEngineView(self.ui.tab)
         self.ui.widget = QtWebEngineWidgets.QWebEngineView(self.ui.tabWidget)
         self.ui.widget.setGeometry(QtCore.QRect(0, 60, 1341, 581))
         self.ui.widget.setWhatsThis("")
@@ -103,7 +109,6 @@ class MainWindow(QWidget):
         self.ui.tabWidget.setCurrentIndex(i)
         self.ui.widget.load(QtCore.QUrl("https://www.google.com"))
 
-        # if
         self.ui.widget.urlChanged.connect(lambda qurl, browser=self.ui.widget:
                                           self.update_url(qurl))
         self.ui.widget.loadFinished.connect(lambda _, i=i, browser=self.ui.widget:
@@ -162,15 +167,13 @@ class MainWindow(QWidget):
                 self.ui.widget.load(QtCore.QUrl("https://www.youtube.com"))
                 x_url.append(self.ui.lineEdit.text())
 
-
             else:
                 if self.ui.comboBox.currentText().lower() == "google" or self.ui.comboBox.currentText().lower() == "bing":
 
                     self.ui.widget.load(QtCore.QUrl(
                         "https://www." + self.ui.comboBox.currentText().lower() + ".com/search?q=" + s))
-                    
+
                 elif self.ui.comboBox.currentText().lower() == "duckduckgo":
-                    
 
                     self.ui.widget.load(QtCore.QUrl(
                         "https://www." + self.ui.comboBox.currentText().lower() + ".com/?q=" + s))
@@ -181,13 +184,12 @@ class MainWindow(QWidget):
                     self.ui.widget.load(QtCore.QUrl(
                         "https://search." + self.ui.comboBox.currentText().lower() + ".com/search?p=" + s))
                     x_url.append(self.ui.lineEdit.text())
-                    
+
                 elif self.ui.comboBox.currentText().lower() == "ask":
                     x_url.append(self.ui.lineEdit.text())
 
                     self.ui.widget.load(QtCore.QUrl(
                         "https://www." + self.ui.comboBox.currentText().lower() + ".com/web?q=" + s))
-               
 
     def update_url(self, url):
         self.ui.progressBar.setStyleSheet("QProgressBar::chunk "
@@ -211,47 +213,20 @@ class MainWindow(QWidget):
         self.ui.lineEdit.setText(s)
         x_url.append(self.ui.lineEdit.text())
         y_url.append(self.ui.lineEdit.text())
-       
+
     def change_search_engines(self):
         s = self.ui.lineEdit.text()
         self.ui.lineEdit.setPlaceholderText(
             "Search "+self.ui.comboBox.currentText()+" or Type a URL")
+
     def refresh_tab(self):
         self.ui.widget.load(QtCore.QUrl(self.ui.lineEdit.text()))
 
     def back_tab(self):
-        global back_press
-        back_press += 1
-        global x_url
-        print(x_url)
-        print(len(x_url))
-        if len(x_url) == 0:
-            pass
-        elif len(x_url) == 1:
-            self.ui.widget.load(QtCore.QUrl("https:www.google.com"))
-
-            
-        else:
-            try:
-                self.ui.widget.load(QtCore.QUrl(x_url[len(x_url) - (back_press+1)]))
-                x_url.remove(x_url[len(x_url) - (back_press+1)])
-            except:
-                pass
+        self.ui.widget.page().triggerAction(QWebEnginePage.Back)
 
     def forward_tab(self):
-        global forward_press
-        forward_press += 1
-        global y_url
-        if len(y_url) == 0 and len(y_url) == 1:
-            pass
-        else:
-            try:
-                self.ui.widget.load(QtCore.QUrl(y_url[-forward_press - 1]))
-                y_url.remove(y_url[len(y_url)-(forward_press+1)])
-            except:
-                pass
-
-
+        self.ui.widget.page().triggerAction(QWebEnginePage.Forward)
 
     def youtube(self):
 
